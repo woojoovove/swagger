@@ -1,0 +1,283 @@
+---
+openapi: 3.0.1
+info:
+  title: Alarm App API
+  description: Alarm Application API doc
+  contact:
+    name: ujinjeong55@gmail.com
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+paths:
+  "/v1/membership/leave":
+    put:
+      tags:
+        - 사용자 알림 그룹 관리
+      summary: 사용자 이름과 그룹 이름으로 그룹을 떠나는 API
+      operationId: leaveGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LeaveDTO"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/DataResponseLeaveResultDTO"
+  "/v1/membership/join":
+    post:
+      tags:
+        - 사용자 알림 그룹 관리
+      summary: 사용자 이름과 그룹 이름으로 그룹에 참여하는 API
+      operationId: joinGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/JoinDTO"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/DataResponseJoinResultDTO"
+  "/v1/group/create":
+    post:
+      tags:
+        - 그룹 관리
+      summary: 그룹 생성 API
+      operationId: createGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Create"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/DataResponseGet"
+  "/v1/alarm/":
+    post:
+      tags:
+        - 알림 기능
+      summary: 알림 푸시
+      description: 원하는 사용자나 그룹에 알림을 보내는 API
+      operationId: pushAlarm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AlarmDTO"
+        required: true
+      responses:
+        '200':
+          description: 알림 푸시 성공
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/DataResponseLong"
+        '500':
+          description: 알림 푸시 실패
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    LeaveDTO:
+      required:
+        - groupName
+        - userNickname
+      type: object
+      properties:
+        userNickname:
+          type: string
+          description: 사용자 닉네임
+          example: member1
+        groupName:
+          type: string
+          description: 그룹명
+          example: group1
+    DataResponseLeaveResultDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: API 성공 여부
+          example: true
+        data:
+          "$ref": "#/components/schemas/LeaveResultDTO"
+    LeaveResultDTO:
+      type: object
+      properties:
+        membershipId:
+          type: integer
+          description: 멤버십 식별자
+          format: int64
+          example: 1
+        userId:
+          type: integer
+          description: 사용자 식별자
+          format: int64
+          example: 1
+        groupId:
+          type: integer
+          description: 그룹 식별자
+          format: int64
+          example: 1
+        userNickname:
+          type: string
+          description: 사용자 닉네임
+          example: member1
+        groupName:
+          type: string
+          description: 그룹명
+          example: group1
+    JoinDTO:
+      required:
+        - groupName
+        - userNickname
+      type: object
+      properties:
+        userNickname:
+          type: string
+          description: 사용자 닉네임
+          example: member1
+        groupName:
+          type: string
+          description: 그룹명
+          example: group1
+      description: 그룹 참가 Input DTO
+    DataResponseJoinResultDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: API 성공 여부
+          example: true
+        data:
+          "$ref": "#/components/schemas/JoinResultDTO"
+    JoinResultDTO:
+      type: object
+      properties:
+        membershipId:
+          type: integer
+          description: 멤버십 식별자
+          format: int64
+          example: 1
+        userId:
+          type: integer
+          description: 사용자 식별자
+          format: int64
+          example: 1
+        groupId:
+          type: integer
+          description: 그룹 식별자
+          format: int64
+          example: 1
+        userNickname:
+          type: string
+          description: 사용자 닉네임
+          example: member1
+        groupName:
+          type: string
+          description: 그룹명
+          example: group1
+      description: 그룹 참가 결과 DTO
+    Create:
+      type: object
+      properties:
+        name:
+          type: string
+    DataResponseGet:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: API 성공 여부
+          example: true
+        data:
+          "$ref": "#/components/schemas/Get"
+    Get:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: API 성공 여부
+          example: false
+        error:
+          type: string
+          description: 에러 코드
+          example: INVALID_INPUT_VALUE
+          enum:
+            - INVALID_INPUT_VALUE
+            - METHOD_NOT_ALLOWED
+            - ENTITY_NOT_FOUND
+            - INTERNAL_SERVER_ERROR
+            - DUPLICATE_GROUP_NAME
+            - GROUP_NOT_FOUND
+            - USER_NOT_FOUND
+            - MESSAGE_SERIALIZE_EXCEPTION
+            - INVALID_REQUEST_JSON
+            - MEMBERSHIP_NOT_FOUND
+    AlarmDTO:
+      required:
+        - severity
+        - target
+      type: object
+      properties:
+        target:
+          type: array
+          description: 알림 대상 목록
+          example:
+            - "@user1"
+            - "@@group1"
+          items:
+            type: string
+            description: 알림 대상 목록
+            example: '["@user1","@@group1"]'
+        severity:
+          type: string
+          description: 심각도
+          default: MEDIUM
+          enum:
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+            - CRITICAL
+            - HIGH
+            - MEDIUM
+            - LOW
+        message:
+          type: string
+          description: 메시지 내용
+          example: node 1 down
+    DataResponseLong:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: API 성공 여부
+          example: true
+        data:
+          type: integer
+          format: int64
